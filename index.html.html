@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description" content="QuizMaster - Un quiz interactif créé par Rayane Chahir pour tester ta culture générale !">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizMaster - par Rayane Chahir</title>
+  <style>
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-size: 400% 400%;
+      animation: gradient 12s ease infinite;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    @keyframes gradient {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .box {
+      background: rgba(0, 0, 0, 0.7);
+      padding: 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 650px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: fadeIn 1s ease;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.3em;
+      color: #ffcc00;
+      margin-bottom: 25px;
+    }
+
+    .question {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    .options label {
+      display: block;
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .options label:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    button {
+      background: #ffcc00;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #333;
+      transition: 0.3s;
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #ffaa00;
+    }
+
+    #scoreboard {
+      margin-top: 20px;
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      color: white;
+    }
+
+    th, td {
+      padding: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #ffcc00;
+      border-radius: 5px;
+      margin: 10px 0;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page d'accueil -->
+  <div id="start-page" class="box">
+    <h1>🎯 QuizMaster</h1>
+    <h2>Créé par Rayane Chahir</h2>
+    <p>Teste ta culture générale avec 20 questions passionnantes !</p>
+    <button onclick="startQuiz()">Commencer le quiz 🚀</button>
+    <div id="scoreboard">
+      <h3>🏆 Meilleurs scores</h3>
+      <table id="highscores-table">
+        <tr><th>Score</th></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Zone du quiz -->
+  <div id="quiz-container" class="box" style="display: none;">
+    <h1>QuizMaster</h1>
+    <div class="progress-bar" id="progress-bar"></div>
+    <p class="question" id="question"></p>
+    <div class="options" id="options"></div>
+    <button onclick="nextQuestion()">Suivant ➡</button>
+    <h2 id="progress"></h2>
+  </div>
+
+  <!-- Résultat final -->
+  <div id="result-page" class="box" style="display: none;">
+    <h1>Résultat 🎉</h1>
+    <h2 id="result"></h2>
+    <p>Bravo d’avoir terminé le quiz !</p>
+    <button onclick="restartQuiz()">Rejouer 🔁</button>
+    <button onclick="goHome()">Accueil 🏠</button>
+  </div>
+
+  <script>
+    const questions = [
+      {q: "Quelle est la capitale du Japon ?", a: ["Séoul", "Pékin", "Tokyo", "Bangkok"], correct: 2},
+      {q: "Qui a peint la Joconde ?", a: ["Picasso", "Léonard de Vinci", "Monet", "Raphaël"], correct: 1},
+      {q: "Combien de planètes compte notre système solaire ?", a: ["7", "8", "9", "10"], correct: 1},
+      {q: "Quelle est la racine carrée de 144 ?", a: ["10", "11", "12", "13"], correct: 2},
+      {q: "Qui a écrit 'Les Misérables' ?", a: ["Zola", "Victor Hugo", "Molière", "Balzac"], correct: 1},
+      {q: "Quel métal est liquide à température ambiante ?", a: ["Mercure", "Fer", "Aluminium", "Or"], correct: 0},
+      {q: "Quelle est la capitale du Canada ?", a: ["Toronto", "Ottawa", "Montréal", "Vancouver"], correct: 1},
+      {q: "Quel océan borde la côte ouest de l’Afrique ?", a: ["Atlantique", "Pacifique", "Indien", "Arctique"], correct: 0},
+      {q: "Combien de côtés a un hexagone ?", a: ["5", "6", "7", "8"], correct: 1},
+      {q: "Quel est le symbole chimique de l’eau ?", a: ["O2", "H2O", "CO2", "HO"], correct: 1},
+      {q: "En quelle année l’homme a-t-il marché sur la Lune ?", a: ["1965", "1969", "1972", "1980"], correct: 1},
+      {q: "Quelle est la langue la plus parlée au monde ?", a: ["Anglais", "Espagnol", "Chinois mandarin", "Hindi"], correct: 2},
+      {q: "Combien de continents existe-t-il ?", a: ["5", "6", "7", "8"], correct: 2},
+      {q: "Quel est le plus long fleuve du monde ?", a: ["Nil", "Amazone", "Mississippi", "Yangtsé"], correct: 1},
+      {q: "Qui a inventé la pénicilline ?", a: ["Pasteur", "Fleming", "Curie", "Einstein"], correct: 1},
+      {q: "Quelle planète est surnommée la planète rouge ?", a: ["Vénus", "Mars", "Mercure", "Saturne"], correct: 1},
+      {q: "Quel est le symbole chimique du fer ?", a: ["Fe", "Ir", "Fr", "In"], correct: 0},
+      {q: "Quel pays a remporté la Coupe du Monde 2018 ?", a: ["Brésil", "France", "Allemagne", "Argentine"], correct: 1},
+      {q: "Quel instrument mesure la température ?", a: ["Baromètre", "Thermomètre", "Altimètre", "Manomètre"], correct: 1},
+      {q: "Combien font 9 × 9 ?", a: ["72", "81", "90", "99"], correct: 1}
+    ];
+
+    let current = 0;
+    let score = 0;
+
+    function startQuiz() {
+      document.getElementById("start-page").style.display = "none";
+      document.getElementById("quiz-container").style.display = "block";
+      current = 0;
+      score = 0;
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[current];
+      document.getElementById("question").textContent = ${current + 1}. ${q.q};
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      q.a.forEach((option, i) => {
+        optionsDiv.innerHTML += `
+          <label><input type="radio" name="option" value="${i}"> ${option}</label>
+        `;
+      });
+      document.getElementById("progress").textContent = Question ${current + 1} / ${questions.length};
+      document.getElementById("progress-bar").style.width = ${((current + 1) / questions.length) * 100}%;
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="option"]:checked');
+      if (!selected) {
+        alert("Sélectionne une réponse avant de continuer !");
+        return;
+      }
+      if (parseInt(selected.value) === questions[current].correct) score++;
+      current++;
+      if (current < questions.length) showQuestion();
+      else endQuiz();
+    }
+
+    function endQuiz() {
+      document.getElementById("quiz-container").style.display = "none";
+      document.getElementById("result-page").style.display = "block";
+      document.getElementById("result").textContent = Ton score final : ${score}/${questions.length};
+      saveHighScore(score);
+      displayScores();
+    }
+
+    function restartQuiz() {
+      startQuiz();
+    }
+
+    function goHome() {
+      document.getElementById("result-page").style.display = "none";
+      document.getElementById("start-page").style.display = "block";
+      displayScores();
+    }
+
+    function saveHighScore(score) {
+      let scores = JSON.parse(localStorage.getItem("highscores") || "[]");
+      scores.push(score);
+      scores.sort((a, b) => b - a);
+      scores = scores.slice(0, 5);
+      localStorage.setItem("highscores", JSON.stringify(scores));
+    }
+
+    function displayScores() {
+      const table = document.getElementById("highscores-table");
+      const scores = JSON.parse(localStorage.getItem("highscores") || "[]");
+      table.innerHTML = "<tr><th>Score</th></tr>";
+      scores.forEach(s => {
+        table.innerHTML += <tr><td>${s}</td></tr>;
+      });
+    }
+
+    displayScores();
+  </script>
+</body>
+</html>
